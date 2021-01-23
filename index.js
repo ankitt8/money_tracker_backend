@@ -43,11 +43,11 @@ app.use('/api', jsonParser);
 
 // POST method to register a new entry
 app.post('/api/add_transaction', (req, res) => {
-    const daiilyTransact = new DailyTransaction(req.body);
+    const dailyTransact = new DailyTransaction(req.body);
     console.log(req.body);
-    daiilyTransact.save()
+    dailyTransact.save()
         .then((transactSavedDetails) => {
-            res.status(200).json({ Status: `Transaction with id ${transactSavedDetails} added successfully!` });
+            res.status(200).json(transactSavedDetails);
         })
         .catch((err) => {
             console.log(err);
@@ -76,7 +76,7 @@ app.get('/api/get_transactions', (req, res) => {
 // }
 app.post('/api/edit_transaction', (req, res) => {
     const updatedTransaction = req.body;
-    const id = req.query.transactionId;
+    const id = req.query.id;
     DailyTransaction.findByIdAndUpdate(id, updatedTransaction, (err, result) => {
         if (err) {
             res.status(400).send(`Unable to edit transaction with ${id}`);
@@ -84,7 +84,6 @@ app.post('/api/edit_transaction', (req, res) => {
             res.status(200).json(`Transaction with id=${id} upated succesfully, updated transaction is ${result}`);
         }
     })
-
 });
 // app.get('/api/get_user', (req, res) => {
 //     const _id = req.query.userId;
