@@ -85,18 +85,17 @@ app.post('/api/edit_transaction', (req, res) => {
         }
     })
 });
-// app.get('/api/get_user', (req, res) => {
-//     const _id = req.query.userId;
-//     console.log(_id)
-//     User.findOne({ _id }, (err, result) => {
-//         if (err) {
-//             res.status(400).send('User not found!!');
-//         } else {
-//             res.status(200).json(result);
-//         }
-//     })
-// })
 
+app.post('/api/delete_transaction', (req, res) => {
+    const id = req.query.id;
+    DailyTransaction.deleteOne({_id: id}, function (err, result) {
+        if (err) {
+            res.status(400).send(`Unable to delete transaction with id ${id}`);
+        } else {
+            res.status(200).json(`Transaction with id ${id} deleted successfully!`)
+        }
+    })
+})
 const port = process.env.PORT || 8080;
 
 app.listen(port, () => {
