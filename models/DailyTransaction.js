@@ -8,6 +8,9 @@ const DailyTransactionSchema = new mongoose.Schema({
     },
     date: {
         type: Date
+    },
+    mode: {
+        type: String
     }
 })
 
