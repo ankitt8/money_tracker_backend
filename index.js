@@ -59,11 +59,16 @@ app.post('/api/add_transaction', (req, res) => {
 
 // gET method to get user detials to shown on home page
 app.get('/api/get_transactions', (req, res) => {
+    function getCurrentMonthTransactions(transactions) {
+        const currMonth = new Date().getMonth();
+        return (transactions.filter(transaction => transaction.date.getMonth() === currMonth));
+    }
     DailyTransaction.find({}, (err, transactions) => {
         if (err) {
             res.status(400).send('Failed to get transactions');
         } else {
-            res.status(200).json(transactions);
+            const currentMonthTransactions = getCurrentMonthTransactions(transactions);
+            res.status(200).json(currentMonthTransactions);
         }
     });
 });
