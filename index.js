@@ -62,9 +62,10 @@ app.post('/api/signin', (req, res) => {
             res.status(400).json({error: 'Something broke from our end ):'})
         } else if(user) {
             if(user.password === password) {
-                userId = user._id;
+                const userId = user._id;
+                const username = user.username;
                 console.log(userId);
-                res.status(200).json({success: 'Userlogged in successfully!', userId: userId});
+                res.status(200).json({success: 'Userlogged in successfully!', userId, username});
             } else {
                 res.status(400).json({error: 'Invalid Username or password'});
             }
@@ -86,7 +87,8 @@ app.post('/api/signup', (req, res) => {
             const user = new User(req.body);
             user.save()
                 .then((userSavedDetails) => {
-                    res.status(200).json({...userSavedDetails, error:'', userId:userSavedDetails._id});
+                    const {username} = userSavedDetails;
+                    res.status(200).json({...userSavedDetails, error:'', userId:userSavedDetails._id, username});
                 })
                 .catch((err) => {
                     // console.log(err);
