@@ -101,7 +101,6 @@ app.post('/api/signup', (req, res) => {
 // POST method to register a new entryaa
 app.post('/api/add_transaction', (req, res) => {
     const Transact = new Transaction(req.body);
-    // console.log(req.body);
     Transact.save()
         .then((transactSavedDetails) => {
             return res.status(200).json(transactSavedDetails);
