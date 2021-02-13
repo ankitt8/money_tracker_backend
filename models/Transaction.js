@@ -13,6 +13,9 @@ const TransactionSchema = new mongoose.Schema({
     mode: {
         type: String
     },
+    type: {
+        type: String
+    },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 })
 
