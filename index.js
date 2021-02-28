@@ -1,5 +1,6 @@
 /* eslint-disable */
 const express = require('express');
+const mongoose = require('mongoose')
 // const cors = require('cors');
 const dotenv = require('dotenv');
 // getting User Modal
@@ -8,10 +9,11 @@ const connectDB = require('./config/db');
 // load config
 dotenv.config({ path: './config/config.env' });
 
-const bodyParser = require('body-parser');
-const DailyTransaction = require('./models/DailyTransaction');
+// const bodyParser = require('body-parser');
+const Transaction = require('./models/Transaction');
+const User = require('./models/User');
 // use bodyParser to parse req.body
-const jsonParser = bodyParser.json();
+// const jsonParser = bodyParser.json();
 
 // app.use(cors({
 //     'allowedHeaders': ['sessionId', 'Content-Type'],
@@ -39,65 +41,119 @@ app.use(function (req, res, next) {
     // Pass to next layer of middleware
     next();
 });
-app.use('/api', jsonParser);
+app.use(express.json());
 
-// POST method to register a new entry
+const checkUserExists = (username) => {
+    User.findOne({username: username}, (err, user) => {
+        if(err) {
+            return {userExists: false, error: 'Something broke from our end ):'};
+        } else {
+            if(user) return {userExists: true};
+            else return {userExists: false, error: 'Invalid username'}
+        }
+    });
+
+}
+// POST method to check the credentials for signin
+app.post('/api/signin', (req, res) => {
+    const {username, password} = req.body;
+    User.findOne({username: username}, (err, user) => {
+        if(err) {
+            res.status(400).json({error: 'Something broke from our end ):'})
+        } else if(user) {
+            if(user.password === password) {
+                const userId = user._id;
+                const username = user.username;
+                console.log(userId);
+                res.status(200).json({success: 'Userlogged in successfully!', userId, username});
+            } else {
+                res.status(400).json({error: 'Invalid Username or password'});
+            }
+        } else {
+            res.status(400).json({error: 'User not found ):'});
+        }
+    });
+})
+
+// Signup route
+app.post('/api/signup', (req, res) => {
+    const {username} = req.body;
+    User.findOne({username: username}, (err, user) => {
+        if (err) {
+            res.status(400).json({error: 'Something went wrong'});
+        } else if(user) {
+            res.status(400).json({error: 'User Already Exists!'});
+        } else {
+            const user = new User(req.body);
+            user.save()
+                .then((userSavedDetails) => {
+                    const {username} = userSavedDetails;
+                    res.status(200).json({...userSavedDetails, error:'', userId:userSavedDetails._id, username});
+                })
+                .catch((err) => {
+                    // console.log(err);
+                    res.status(400).json({error: 'Something went wrong'});
+                })
+        }
+    })
+
+})
+// POST method to register a new entryaa
 app.post('/api/add_transaction', (req, res) => {
-    const daiilyTransact = new DailyTransaction(req.body);
-    console.log(req.body);
-    daiilyTransact.save()
+    const Transact = new Transaction(req.body);
+    Transact.save()
         .then((transactSavedDetails) => {
-            res.status(200).json({ Status: `Transaction with id ${transactSavedDetails} added successfully!` });
+            return res.status(200).json(transactSavedDetails);
         })
         .catch((err) => {
-            console.log(err);
-            res.status(400).send('Failed To Add transaction');
+            return res.status(400).send('Failed To Add transaction');
         });
 });
 
-
-
 // gET method to get user detials to shown on home page
-app.get('/api/get_transactions', (req, res) => {
-    DailyTransaction.find({}, (err, transactions) => {
-        if (err) {
-            res.status(400).send('Failed to get transactions');
-        } else {
-            res.status(200).json(transactions);
-        }
-    });
+app.post('/api/get_transactions', (req, res) => {
+    const {userId} = req.body;
+    if(userId == '' || userId == undefined) {
+        return res.status(400).json({error:'Invalid userId'});
+    }
+    Transaction
+        .find({ userId : userId})
+        .exec(function (err, transactions) {
+            if (err) {
+                return res.status(400).json({error:'Failed to get transactions'});
+            };
+            const currentMonthTransactions = getCurrentMonthTransactions(transactions);
+            return res.status(200).json(currentMonthTransactions);
+        });
+    function getCurrentMonthTransactions(transactions) {
+        const currMonth = new Date().getMonth();
+        return (transactions.filter(transaction => transaction.date.getMonth() === currMonth));
+    }
+
 });
 
-// GET method to get specific user details
-// async function edit(filter, update) {
-//   let updatedUser = await User.findByIdAndUpdate(filter, update, {
-//     new: true
-//   })
-// }
 app.post('/api/edit_transaction', (req, res) => {
     const updatedTransaction = req.body;
-    const id = req.query.transactionId;
-    DailyTransaction.findByIdAndUpdate(id, updatedTransaction, (err, result) => {
+    const id = req.query.id;
+    Transaction.findByIdAndUpdate(id, updatedTransaction, (err, result) => {
         if (err) {
             res.status(400).send(`Unable to edit transaction with ${id}`);
         } else {
             res.status(200).json(`Transaction with id=${id} upated succesfully, updated transaction is ${result}`);
         }
     })
-
 });
-// app.get('/api/get_user', (req, res) => {
-//     const _id = req.query.userId;
-//     console.log(_id)
-//     User.findOne({ _id }, (err, result) => {
-//         if (err) {
-//             res.status(400).send('User not found!!');
-//         } else {
-//             res.status(200).json(result);
-//         }
-//     })
-// })
 
+app.post('/api/delete_transaction', (req, res) => {
+    const id = req.query.id;
+    Transaction.deleteOne({_id: id}, function (err, result) {
+        if (err) {
+            res.status(400).send(`Unable to delete transaction with id ${id}`);
+        } else {
+            res.status(200).json(`Transaction with id ${id} deleted successfully!`)
+        }
+    })
+})
 const port = process.env.PORT || 8080;
 
 app.listen(port, () => {
