@@ -24,19 +24,20 @@ const User = require('./models/User');
 // }));
 const app = express();
 app.use(function (req, res, next) {
+    const allowedOrigins = ['http://localhost:3000', 'https://moneytrackerankit.netlify.app/']
 
-    // Website you wish to allow to connect
-    res.setHeader('Access-Control-Allow-Origin', '*');
-
+    if (allowedOrigins.includes(req.headers.origin)) {
+        res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+    }
     // Request methods you wish to allow
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
 
     // Request headers you wish to allow
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+    res.setHeader('Access-Control-Allow-Headers', ',content-type');
 
     // Set to true if you need the website to include cookies in the requests sent
     // to the API (e.g. in case you use sessions)
-    res.setHeader('Access-Control-Allow-Credentials', true);
+    // res.setHeader('Access-Control-Allow-Credentials', true);
 
     // Pass to next layer of middleware
     next();
@@ -44,55 +45,55 @@ app.use(function (req, res, next) {
 app.use(express.json());
 
 const checkUserExists = (username) => {
-    User.findOne({username: username}, (err, user) => {
-        if(err) {
-            return {userExists: false, error: 'Something broke from our end ):'};
+    User.findOne({ username: username }, (err, user) => {
+        if (err) {
+            return { userExists: false, error: 'Something broke from our end ):' };
         } else {
-            if(user) return {userExists: true};
-            else return {userExists: false, error: 'Invalid username'}
+            if (user) return { userExists: true };
+            else return { userExists: false, error: 'Invalid username' }
         }
     });
 
 }
 // POST method to check the credentials for signin
 app.post('/api/signin', (req, res) => {
-    const {username, password} = req.body;
-    User.findOne({username: username}, (err, user) => {
-        if(err) {
-            res.status(400).json({error: 'Something broke from our end ):'})
-        } else if(user) {
-            if(user.password === password) {
+    const { username, password } = req.body;
+    User.findOne({ username: username }, (err, user) => {
+        if (err) {
+            res.status(400).json({ error: 'Something broke from our end ):' })
+        } else if (user) {
+            if (user.password === password) {
                 const userId = user._id;
                 const username = user.username;
                 console.log(userId);
-                res.status(200).json({success: 'Userlogged in successfully!', userId, username});
+                res.status(200).json({ success: 'Userlogged in successfully!', userId, username });
             } else {
-                res.status(400).json({error: 'Invalid Username or password'});
+                res.status(400).json({ error: 'Invalid Username or password' });
             }
         } else {
-            res.status(400).json({error: 'User not found ):'});
+            res.status(400).json({ error: 'User not found ):' });
         }
     });
 })
 
 // Signup route
 app.post('/api/signup', (req, res) => {
-    const {username} = req.body;
-    User.findOne({username: username}, (err, user) => {
+    const { username } = req.body;
+    User.findOne({ username: username }, (err, user) => {
         if (err) {
-            res.status(400).json({error: 'Something went wrong'});
-        } else if(user) {
-            res.status(400).json({error: 'User Already Exists!'});
+            res.status(400).json({ error: 'Something went wrong' });
+        } else if (user) {
+            res.status(400).json({ error: 'User Already Exists!' });
         } else {
             const user = new User(req.body);
             user.save()
                 .then((userSavedDetails) => {
-                    const {username} = userSavedDetails;
-                    res.status(200).json({...userSavedDetails, error:'', userId:userSavedDetails._id, username});
+                    const { username } = userSavedDetails;
+                    res.status(200).json({ ...userSavedDetails, error: '', userId: userSavedDetails._id, username });
                 })
                 .catch((err) => {
                     // console.log(err);
-                    res.status(400).json({error: 'Something went wrong'});
+                    res.status(400).json({ error: 'Something went wrong' });
                 })
         }
     })
@@ -112,15 +113,15 @@ app.post('/api/add_transaction', (req, res) => {
 
 // gET method to get user detials to shown on home page
 app.post('/api/get_transactions', (req, res) => {
-    const {userId} = req.body;
-    if(userId == '' || userId == undefined) {
-        return res.status(400).json({error:'Invalid userId'});
+    const { userId } = req.body;
+    if (userId == '' || userId == undefined) {
+        return res.status(400).json({ error: 'Invalid userId' });
     }
     Transaction
-        .find({ userId : userId})
+        .find({ userId: userId })
         .exec(function (err, transactions) {
             if (err) {
-                return res.status(400).json({error:'Failed to get transactions'});
+                return res.status(400).json({ error: 'Failed to get transactions' });
             };
             const currentMonthTransactions = getCurrentMonthTransactions(transactions);
             return res.status(200).json(currentMonthTransactions);
@@ -146,7 +147,7 @@ app.post('/api/edit_transaction', (req, res) => {
 
 app.post('/api/delete_transaction', (req, res) => {
     const id = req.query.id;
-    Transaction.deleteOne({_id: id}, function (err, result) {
+    Transaction.deleteOne({ _id: id }, function (err, result) {
         if (err) {
             res.status(400).send(`Unable to delete transaction with id ${id}`);
         } else {
