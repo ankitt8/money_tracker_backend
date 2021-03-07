@@ -65,7 +65,6 @@ app.post('/api/signin', (req, res) => {
             if (user.password === password) {
                 const userId = user._id;
                 const username = user.username;
-                console.log(userId);
                 res.status(200).json({ success: 'Userlogged in successfully!', userId, username });
             } else {
                 res.status(400).json({ error: 'Invalid Username or password' });
@@ -98,8 +97,8 @@ app.post('/api/signup', (req, res) => {
         }
     })
 
-})
-// POST method to register a new entryaa
+});
+
 app.post('/api/add_transaction', (req, res) => {
     const Transact = new Transaction(req.body);
     Transact.save()
@@ -109,6 +108,97 @@ app.post('/api/add_transaction', (req, res) => {
         .catch((err) => {
             return res.status(400).send('Failed To Add transaction');
         });
+});
+
+app.post('/api/get-transaction-categories', (req, res) => {
+    User.findById(
+        req.body.userId,
+        function callback(err, doc) {
+            if (err) {
+                res.status(404).json({ error: err });
+            } else {
+                res.status(201).json({
+                    transactionCategories: {
+                        credit: doc.creditTransactionCategories,
+                        debit: doc.debitTransactionCategories
+                    }
+                })
+            }
+        }
+    )
+})
+
+app.post('/api/add-credit-transaction-category', (req, res) => {
+    const { userId, category } = req.body;
+    User.findByIdAndUpdate(
+        userId,
+        { $push: { creditTransactionCategories: category } },
+        { new: true },
+        function callback(err, doc) {
+            if (err) {
+                res.status(404).json({ error: err });
+            } else {
+                res.status(200).json({ successMsg: `Transaction Category ${category} added successfully` });
+            }
+        }
+    )
+});
+
+app.post('/api/add-debit-transaction-category', (req, res) => {
+    const { userId, category } = req.body;
+    User.findByIdAndUpdate(
+        userId,
+        { $push: { debitTransactionCategories: category } },
+        { new: true },
+        function callback(err, doc) {
+            if (err) {
+                res.status(404).json({ error: err });
+            } else {
+                res.status(200).json({ successMsg: `Transaction Category ${category} added successfully` });;
+            }
+        }
+    )
+});
+
+app.post('/api/delete-credit-transaction-category', (req, res) => {
+    // const { userId, category } = req.body;
+    const { userId, categories } = req.body;
+    User.findByIdAndUpdate(
+        userId,
+        // Not able to figure out below why the category didn't get deleted
+        // maybe can use sub documetns later to make it more scalable
+        // { $pull: { creditTransactionCategories: { $eleMatch: category } } },
+        { $set: { creditTransactionCategories: categories } },
+        { new: true },
+        function callback(err, doc) {
+            if (err) {
+                res.status(404).json({ error: err });
+            } else {
+                res.status(200).json({ msg: `Transaction Category ${categories} deleted successfully!` });
+            }
+        }
+    )
+});
+
+app.post('/api/delete-debit-transaction-category', (req, res) => {
+    // const { userId, category } = req.body;
+    const { userId, categories } = req.body;
+    User.findByIdAndUpdate(
+        userId,
+        // Not able to figure out below why the category didn't get deleted
+        // maybe can use sub documetns later to make it more scalable
+        // { $pull: { debitTransactionCategories: { $eleMatch: category } } },
+        { $set: { debitTransactionCategories: categories } },
+        { new: true },
+        function callback(err, doc) {
+            if (err) {
+                console.error(err);
+                res.status(404).json({ error: err });
+            } else {
+                res.status(200).json({ msg: `Transaction Category ${categories} deleted successfully!` });
+            }
+        }
+    )
 });
 
 // gET method to get user detials to shown on home page
