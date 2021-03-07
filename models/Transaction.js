@@ -16,6 +16,9 @@ const TransactionSchema = new mongoose.Schema({
     type: {
         type: String
     },
+    category: {
+        type: String
+    },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 })
 
