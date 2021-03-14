@@ -226,11 +226,11 @@ app.post('/api/get_transactions', (req, res) => {
 app.post('/api/edit_transaction', (req, res) => {
     const updatedTransaction = req.body;
     const id = req.query.id;
-    Transaction.findByIdAndUpdate(id, updatedTransaction, (err, result) => {
+    Transaction.findByIdAndUpdate(id, updatedTransaction, { returnOriginal: false }, (err, result) => {
         if (err) {
             res.status(400).send(`Unable to edit transaction with ${id}`);
         } else {
-            res.status(200).json(`Transaction with id=${id} upated succesfully, updated transaction is ${result}`);
+            res.status(200).json(result);
         }
     })
 });
@@ -241,7 +241,7 @@ app.post('/api/delete_transaction', (req, res) => {
         if (err) {
             res.status(400).send(`Unable to delete transaction with id ${id}`);
         } else {
-            res.status(200).json(`Transaction with id ${id} deleted successfully!`)
+            res.status(200).json({ transactionId: id });
         }
     })
 })
