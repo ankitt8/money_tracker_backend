@@ -214,6 +214,12 @@ app.post('/api/get_transactions', (req, res) => {
                 return res.status(400).json({ error: 'Failed to get transactions' });
             };
             const currentMonthTransactions = getCurrentMonthTransactions(transactions);
+            currentMonthTransactions.sort((a, b) => {
+                const da = new Date(a.date);
+                const db = new Date(b.date);
+                // sort by date in descending order
+                return db - da;
+            });
             return res.status(200).json(currentMonthTransactions);
         });
     function getCurrentMonthTransactions(transactions) {
