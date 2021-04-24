@@ -24,7 +24,7 @@ const User = require('./models/User');
 // }));
 const app = express();
 app.use(function (req, res, next) {
-    const allowedOrigins = ['http://localhost:3000', 'https://moneytrackerankit.netlify.app/']
+  const allowedOrigins = ['http://localhost:3000', 'https://moneytrackerankit.netlify.app/', 'https://issue-37-ui-improvement--moneytrackerankit.netlify.app/']
 
     if (allowedOrigins.includes(req.headers.origin)) {
         res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
