@@ -196,7 +196,7 @@ app.post(URL.API_URL_DELETE_DEBIT_TRANSACTION_CATEGORY, (req, res) => {
   )
 });
 
-app.get(URL.API_URL_GET_TRANSACTIONS + '/:userId', (req, res) => {
+app.get(URL.API_URL_GET_TRANSACTIONS, (req, res) => {
   const { userId } = req.params;
   if (userId == '' || userId == undefined) {
     return res.status(400).json({ error: 'Invalid userId' });
