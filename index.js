@@ -1,40 +1,37 @@
 /* eslint-disable */
 const express = require('express');
-const mongoose = require('mongoose')
-// const cors = require('cors');
+// const { graphqlHTTP } = require('express-graphql');
 const dotenv = require('dotenv');
-// getting User Modal
-// const User = require('./models/DailyTransaction');
 const connectDB = require('./config/db');
+const {URL} = require('./constant');
+// const schema = require('./schema.js');
 // load config
 dotenv.config({ path: './config/config.env' });
 
-// const bodyParser = require('body-parser');
+
 const Transaction = require('./models/Transaction');
 const User = require('./models/User');
-// use bodyParser to parse req.body
-// const jsonParser = bodyParser.json();
 
-// app.use(cors({
-//     'allowedHeaders': ['sessionId', 'Content-Type'],
-//     'exposedHeaders': ['sessionId'],
-//     'origin': ['http://localhost:3000/', 'https://adoring-benz-a639db.netlify.app/'],
-//     'methods': 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-//     'preflightContinue': false
-// }));
 const app = express();
+// app.use(graphqlHTTP({
+//   schema,
+//   graphiql: true
+// }));
+
 app.use(function (req, res, next) {
   const allowedOrigins = ['http://localhost:3000', 'https://moneytrackerankit.netlify.app', 'https://issue-37-ui-improvement--moneytrackerankit.netlify.app']
-
-  if (allowedOrigins.includes(req.headers.origin)) {
-    res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+  const requestOrigin = req.headers.origin;
+  if (allowedOrigins.includes(requestOrigin)) {
+    res.setHeader('Access-Control-Allow-Origin', requestOrigin);
   }
   // Request methods you wish to allow
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
 
   // Request headers you wish to allow
-  res.setHeader('Access-Control-Allow-Headers', ',content-type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
+  // for how long to cache the preflight request response
+  res.setHeader('Access-Control-Max-Age', 8640)
   // Set to true if you need the website to include cookies in the requests sent
   // to the API (e.g. in case you use sessions)
   // res.setHeader('Access-Control-Allow-Credentials', true);
@@ -56,7 +53,7 @@ const checkUserExists = (username) => {
 
 }
 // POST method to check the credentials for signin
-app.post('/api/signin', (req, res) => {
+app.post(URL.API_URL_SIGNIN, (req, res) => {
   const { username, password } = req.body;
   User.findOne({ username: username }, (err, user) => {
     if (err) {
@@ -75,8 +72,7 @@ app.post('/api/signin', (req, res) => {
   });
 })
 
-// Signup route
-app.post('/api/signup', (req, res) => {
+app.post(URL.API_URL_SIGNUP, (req, res) => {
   const { username } = req.body;
   User.findOne({ username: username }, (err, user) => {
     if (err) {
@@ -91,7 +87,6 @@ app.post('/api/signup', (req, res) => {
           res.status(200).json({ ...userSavedDetails, error: '', userId: userSavedDetails._id, username });
         })
         .catch((err) => {
-          // console.log(err);
           res.status(400).json({ error: 'Something went wrong' });
         })
     }
@@ -99,7 +94,7 @@ app.post('/api/signup', (req, res) => {
 
 });
 
-app.post('/api/add_transaction', (req, res) => {
+app.post(URL.API_URL_ADD_TRANSACTION, (req, res) => {
   const Transact = new Transaction(req.body);
   Transact.save()
     .then((transactSavedDetails) => {
@@ -110,7 +105,7 @@ app.post('/api/add_transaction', (req, res) => {
     });
 });
 
-app.post('/api/get-transaction-categories', (req, res) => {
+app.post(URL.API_URL_GET_TRANSACTION_CATEGORIES, (req, res) => {
   User.findById(
     req.body.userId,
     function callback(err, doc) {
@@ -128,7 +123,7 @@ app.post('/api/get-transaction-categories', (req, res) => {
   )
 })
 
-app.post('/api/add-credit-transaction-category', (req, res) => {
+app.post(URL.API_URL_ADD_CREDIT_TRANSACTION_CATEGORY, (req, res) => {
   const { userId, category } = req.body;
   User.findByIdAndUpdate(
     userId,
@@ -144,7 +139,7 @@ app.post('/api/add-credit-transaction-category', (req, res) => {
   )
 });
 
-app.post('/api/add-debit-transaction-category', (req, res) => {
+app.post(URL.API_URL_ADD_DEBIT_TRANSACTION_CATEGORY, (req, res) => {
   const { userId, category } = req.body;
   User.findByIdAndUpdate(
     userId,
@@ -160,7 +155,7 @@ app.post('/api/add-debit-transaction-category', (req, res) => {
   )
 });
 
-app.post('/api/delete-credit-transaction-category', (req, res) => {
+app.post(URL.API_URL_DELETE_CREDIT_TRANSACTION_CATEGORY, (req, res) => {
   // const { userId, category } = req.body;
   const { userId, categories } = req.body;
   User.findByIdAndUpdate(
@@ -180,7 +175,7 @@ app.post('/api/delete-credit-transaction-category', (req, res) => {
   )
 });
 
-app.post('/api/delete-debit-transaction-category', (req, res) => {
+app.post(URL.API_URL_DELETE_DEBIT_TRANSACTION_CATEGORY, (req, res) => {
   // const { userId, category } = req.body;
   const { userId, categories } = req.body;
   User.findByIdAndUpdate(
@@ -201,9 +196,8 @@ app.post('/api/delete-debit-transaction-category', (req, res) => {
   )
 });
 
-// gET method to get user detials to shown on home page
-app.post('/api/get_transactions', (req, res) => {
-  const { userId } = req.body;
+app.get(URL.API_URL_GET_TRANSACTIONS + '/:userId', (req, res) => {
+  const { userId } = req.params;
   if (userId == '' || userId == undefined) {
     return res.status(400).json({ error: 'Invalid userId' });
   }
@@ -229,7 +223,7 @@ app.post('/api/get_transactions', (req, res) => {
 
 });
 
-app.post('/api/edit_transaction', (req, res) => {
+app.post(URL.API_URL_EDIT_TRANSACTION, (req, res) => {
   const updatedTransaction = req.body;
   const id = req.query.id;
   Transaction.findByIdAndUpdate(id, updatedTransaction, { returnOriginal: false }, (err, result) => {
@@ -241,7 +235,7 @@ app.post('/api/edit_transaction', (req, res) => {
   })
 });
 
-app.post('/api/delete_transaction', (req, res) => {
+app.post(URL.API_URL_DELETE_TRANSACTION, (req, res) => {
   const id = req.query.id;
   Transaction.deleteOne({ _id: id }, function (err, result) {
     if (err) {
