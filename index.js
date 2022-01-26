@@ -21,6 +21,7 @@ const app = express();
 app.use(function (req, res, next) {
   const allowedOrigins = ['http://localhost:3000', 'https://moneytrackerankit.netlify.app', 'https://issue-37-ui-improvement--moneytrackerankit.netlify.app']
   const requestOrigin = req.headers.origin;
+  res.setHeader('Access-Control-Allow-Origin', '*');
   if (allowedOrigins.includes(requestOrigin)) {
     res.setHeader('Access-Control-Allow-Origin', requestOrigin);
   }
