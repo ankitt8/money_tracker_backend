@@ -3,7 +3,7 @@ const express = require('express');
 // const { graphqlHTTP } = require('express-graphql');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
-const {URL} = require('./constant');
+const { URL } = require('./constant');
 // const schema = require('./schema.js');
 // load config
 dotenv.config({ path: './config/config.env' });
@@ -19,7 +19,7 @@ const app = express();
 // }));
 
 app.use(function (req, res, next) {
-  const allowedOrigins = ['http://localhost:3000', 'https://moneytrackerankit.netlify.app', 'https://issue-37-ui-improvement--moneytrackerankit.netlify.app']
+  const allowedOrigins = ['http://localhost:3000', 'http://localhost:3001', 'https://moneytrackerankit.netlify.app', 'https://issue-37-ui-improvement--moneytrackerankit.netlify.app']
   const requestOrigin = req.headers.origin;
   // res.setHeader('Access-Control-Allow-Origin', '*');
   if (allowedOrigins.includes(requestOrigin)) {
@@ -218,8 +218,13 @@ app.get(URL.API_URL_GET_TRANSACTIONS, (req, res) => {
       return res.status(200).json(currentMonthTransactions);
     });
   function getCurrentMonthTransactions(transactions) {
-    const currMonth = new Date().getMonth();
-    return (transactions.filter(transaction => transaction.date && transaction.date.getMonth() === currMonth));
+    const date = new Date();
+    const currMonth = date.getMonth();
+    const currYear = date.getFullYear();
+    return (transactions.filter(transaction => transaction.date
+         && transaction.date.getMonth() === currMonth
+        && transaction.date.getFullYear() === currYear)
+    );
   }
 
 });
