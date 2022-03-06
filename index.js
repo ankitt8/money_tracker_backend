@@ -6,7 +6,7 @@ const connectDB = require('./config/db');
 const { URL } = require('./constant');
 // const schema = require('./schema.js');
 // load config
-dotenv.config({ path: './config/config.env' });
+dotenv.config(getDotEnvConfigOptions());
 
 
 const Transaction = require('./models/Transaction');
@@ -257,3 +257,18 @@ app.listen(port, () => {
   console.log(`Server running on port ${port}`);
   connectDB();
 });
+
+function getDotEnvConfigOptions() {
+  const isEnvProduction = process.env.NODE_ENV === 'production';
+  let dotEnvConfigOptions = {};
+  if (isEnvProduction) {
+    dotEnvConfigOptions = {
+      path: './config/config-prod.env'
+    };
+  } else {
+    dotEnvConfigOptions = {
+      path: './config/config-local.env'
+    };
+  }
+  return dotEnvConfigOptions;
+}
