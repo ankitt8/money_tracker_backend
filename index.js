@@ -198,35 +198,63 @@ app.post(URL.API_URL_DELETE_DEBIT_TRANSACTION_CATEGORY, (req, res) => {
 });
 
 app.get(URL.API_URL_GET_TRANSACTIONS, (req, res) => {
-  const { userId } = req.params;
-  if (userId == '' || userId == undefined) {
-    return res.status(400).json({ error: 'Invalid userId' });
+  const { userId, startDateString, endDateString, month, year } = req.params;
+  console.log(typeof year);
+  console.log(year);
+  if (userId == "" || userId == undefined) {
+    return res.status(400).json({ error: "Invalid userId" });
   }
-  Transaction
-    .find({ userId: userId })
-    .exec(function (err, transactions) {
-      if (err) {
-        return res.status(400).json({ error: 'Failed to get transactions' });
-      };
-      const currentMonthTransactions = getCurrentMonthTransactions(transactions);
-      currentMonthTransactions.sort((a, b) => {
-        const da = new Date(a.date);
-        const db = new Date(b.date);
-        // sort by date in descending order
-        return db - da;
-      });
-      return res.status(200).json(currentMonthTransactions);
-    });
-  function getCurrentMonthTransactions(transactions) {
-    const date = new Date();
-    const currMonth = date.getMonth();
-    const currYear = date.getFullYear();
-    return (transactions.filter(transaction => transaction.date
-         && transaction.date.getMonth() === currMonth
-        && transaction.date.getFullYear() === currYear)
+  Transaction.find({ userId: userId }).exec(function (err, transactions) {
+    if (err) {
+      return res.status(400).json({ error: "Failed to get transactions" });
+    }
+    const filteredTransactions = getFilteredTransactions(
+      transactions,
+      startDateString,
+      endDateString,
+      month,
+      year
     );
+    filteredTransactions.sort((a, b) => {
+      const da = new Date(a.date);
+      const db = new Date(b.date);
+      // sort by date in descending order
+      return db - da;
+    });
+    return res.status(200).json(filteredTransactions);
+  });
+  function getFilteredTransactions(
+    transactions,
+    startDateString,
+    endDateString,
+    month,
+    year
+  ) {
+    if (startDateString === "undefined" || endDateString === "undefined") {
+      if (month === "undefined") {
+        month = new Date().getMonth();
+      }
+      if (year === "undefined") {
+        year = new Date().getFullYear();
+      }
+      return transactions.filter(
+        (transaction) =>
+          transaction.date &&
+          transaction.date.getMonth() === month &&
+          transaction.date.getFullYear() === year
+      );
+    } else {
+      const startDate = new Date(startDateString);
+      const endDate = new Date(endDateString);
+      return transactions.filter((transaction) => {
+        return (
+          transaction.date &&
+          transaction.date >= startDate &&
+          transaction.date <= endDate
+        );
+      });
+    }
   }
-
 });
 
 app.post(URL.API_URL_EDIT_TRANSACTION, (req, res) => {
