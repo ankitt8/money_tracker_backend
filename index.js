@@ -25,10 +25,10 @@ app.use(function (req, res, next) {
     "https://issue-37-ui-improvement--moneytrackerankit.netlify.app",
   ];
   const requestOrigin = req.headers.origin;
-  // res.setHeader('Access-Control-Allow-Origin', '*');
-  if (allowedOrigins.includes(requestOrigin)) {
-    res.setHeader("Access-Control-Allow-Origin", requestOrigin);
-  }
+  res.setHeader("Access-Control-Allow-Origin", requestOrigin);
+  // if (allowedOrigins.includes(requestOrigin)) {
+  //   res.setHeader("Access-Control-Allow-Origin", requestOrigin);
+  // }
   // Request methods you wish to allow
   res.setHeader("Access-Control-Allow-Methods", "GET,POST");
 
