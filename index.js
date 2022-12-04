@@ -213,7 +213,7 @@ app.post(URL.API_URL_DELETE_DEBIT_TRANSACTION_CATEGORY, (req, res) => {
 });
 
 app.post(URL.API_URL_GET_TRANSACTIONS, (req, res) => {
-  const { userId, startDateString, endDateString, month, year } = req.body;
+  const { userId, startDate: startDateString, endDate: endDateString, month, year } = req.body;
   console.log(typeof year);
   console.log(year);
   if (userId == "" || userId == undefined) {
@@ -262,6 +262,10 @@ app.post(URL.API_URL_GET_TRANSACTIONS, (req, res) => {
     } else {
       const startDate = new Date(startDateString);
       const endDate = new Date(endDateString);
+      // todo when history api is called
+      // endDate timestamp is alwasy greater than the current date
+      // so current date transactions don't come in history
+      // basically remove the seconds thing in checking
       return transactions.filter((transaction) => {
         return (
           transaction.date &&
