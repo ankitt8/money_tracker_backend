@@ -1,6 +1,6 @@
 const URL = {
   API_URL_GET_TRANSACTIONS:
-    "/api/get-transactions/:userId/:startDateString/:endDateString/:month/:year",
+    "/api/get-transactions",
   API_URL_ADD_TRANSACTION: "/api/add-transaction",
   API_URL_EDIT_TRANSACTION: "/api/edit-transaction",
   API_URL_DELETE_TRANSACTION: "/api/delete-transaction",
@@ -17,5 +17,5 @@ const URL = {
 };
 
 module.exports = {
-    URL
+  URL
 }

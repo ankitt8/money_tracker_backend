@@ -18,14 +18,14 @@ const app = express();
 // }));
 
 app.use(function (req, res, next) {
-  const allowedOrigins = [
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "https://moneytrackerankit.netlify.app",
-    "https://issue-37-ui-improvement--moneytrackerankit.netlify.app",
-  ];
-  const requestOrigin = req.headers.origin;
-  res.setHeader("Access-Control-Allow-Origin", requestOrigin);
+  // const allowedOrigins = [
+  //   "http://localhost:3000",
+  //   "http://localhost:3001",
+  //   "https://moneytrackerankit.netlify.app",
+  //   "https://issue-37-ui-improvement--moneytrackerankit.netlify.app",
+  // ];
+  // const requestOrigin = req.headers.origin;
+  res.setHeader("Access-Control-Allow-Origin", "*");
   // if (allowedOrigins.includes(requestOrigin)) {
   //   res.setHeader("Access-Control-Allow-Origin", requestOrigin);
   // }
@@ -212,8 +212,8 @@ app.post(URL.API_URL_DELETE_DEBIT_TRANSACTION_CATEGORY, (req, res) => {
   );
 });
 
-app.get(URL.API_URL_GET_TRANSACTIONS, (req, res) => {
-  const { userId, startDateString, endDateString, month, year } = req.params;
+app.post(URL.API_URL_GET_TRANSACTIONS, (req, res) => {
+  const { userId, startDateString, endDateString, month, year } = req.body;
   console.log(typeof year);
   console.log(year);
   if (userId == "" || userId == undefined) {
@@ -245,11 +245,12 @@ app.get(URL.API_URL_GET_TRANSACTIONS, (req, res) => {
     month,
     year
   ) {
-    if (startDateString === "undefined" || endDateString === "undefined") {
-      if (month === "undefined") {
+
+    if (!startDateString || !endDateString) {
+      if (!month) {
         month = new Date().getMonth();
       }
-      if (year === "undefined") {
+      if (!year) {
         year = new Date().getFullYear();
       }
       return transactions.filter(
