@@ -4,7 +4,8 @@ const UserSchema = new mongoose.Schema({
   password: String,
   transactions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Transaction' }],
   creditTransactionCategories: [String],
-  debitTransactionCategories: [String]
+  debitTransactionCategories: [String],
+  lentTransactionCategories: [String],
 });
 
 module.exports = mongoose.model('User', UserSchema);

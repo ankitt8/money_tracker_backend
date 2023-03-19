@@ -67,8 +67,8 @@ app.post(URL.API_URL_SIGNIN, (req, res) => {
         const userId = user._id;
         const username = user.username;
         res
-          .status(200)
-          .json({ success: "Userlogged in successfully!", userId, username });
+            .status(200)
+            .json({ success: "Userlogged in successfully!", userId, username });
       } else {
         res.status(400).json({ error: "Invalid Username or password" });
       }
@@ -88,19 +88,19 @@ app.post(URL.API_URL_SIGNUP, (req, res) => {
     } else {
       const user = new User(req.body);
       user
-        .save()
-        .then((userSavedDetails) => {
-          const { username } = userSavedDetails;
-          res.status(200).json({
-            ...userSavedDetails,
-            error: "",
-            userId: userSavedDetails._id,
-            username,
+          .save()
+          .then((userSavedDetails) => {
+            const { username } = userSavedDetails;
+            res.status(200).json({
+              ...userSavedDetails,
+              error: "",
+              userId: userSavedDetails._id,
+              username,
+            });
+          })
+          .catch((err) => {
+            res.status(400).json({ error: "Something went wrong" });
           });
-        })
-        .catch((err) => {
-          res.status(400).json({ error: "Something went wrong" });
-        });
     }
   });
 });
@@ -108,12 +108,12 @@ app.post(URL.API_URL_SIGNUP, (req, res) => {
 app.post(URL.API_URL_ADD_TRANSACTION, (req, res) => {
   const Transact = new Transaction(req.body);
   Transact.save()
-    .then((transactSavedDetails) => {
-      return res.status(200).json(transactSavedDetails);
-    })
-    .catch((err) => {
-      return res.status(400).send("Failed To Add transaction");
-    });
+      .then((transactSavedDetails) => {
+        return res.status(200).json(transactSavedDetails);
+      })
+      .catch((err) => {
+        return res.status(400).send("Failed To Add transaction");
+      });
 });
 
 app.post(URL.API_URL_GET_TRANSACTION_CATEGORIES, (req, res) => {
@@ -125,97 +125,74 @@ app.post(URL.API_URL_GET_TRANSACTION_CATEGORIES, (req, res) => {
         transactionCategories: {
           credit: doc.creditTransactionCategories,
           debit: doc.debitTransactionCategories,
+          lent: doc.lentTransactionCategories,
         },
       });
     }
   });
 });
 
-app.post(URL.API_URL_ADD_CREDIT_TRANSACTION_CATEGORY, (req, res) => {
-  const { userId, category } = req.body;
+app.post(URL.API_URL_ADD_TRANSACTION_CATEGORY, (req, res) => {
+  const { userId, category, type } = req.body;
+  let obj = {};
+  if(type === 'debit') {
+    obj = { debitTransactionCategories: category }
+  } else if(type === 'credit') {
+    obj = { creditTransactionCategories: category }
+  } else {
+    obj = { lentTransactionCategories: category }
+  }
   User.findByIdAndUpdate(
-    userId,
-    { $push: { creditTransactionCategories: category } },
-    { new: true },
-    function callback(err, doc) {
-      if (err) {
-        res.status(404).json({ error: err });
-      } else {
-        res.status(200).json({
-          successMsg: `Transaction Category ${category} added successfully`,
-        });
+      userId,
+      { $push: obj },
+      { new: true },
+      function callback(err, doc) {
+        if (err) {
+          res.status(404).json({ error: err });
+        } else {
+          res.status(200).json({
+            successMsg: `Transaction Category ${category} of type ${type} added successfully`,
+          });
+        }
       }
-    }
   );
 });
 
-app.post(URL.API_URL_ADD_DEBIT_TRANSACTION_CATEGORY, (req, res) => {
-  const { userId, category } = req.body;
-  User.findByIdAndUpdate(
-    userId,
-    { $push: { debitTransactionCategories: category } },
-    { new: true },
-    function callback(err, doc) {
-      if (err) {
-        res.status(404).json({ error: err });
-      } else {
-        res.status(200).json({
-          successMsg: `Transaction Category ${category} added successfully`,
-        });
-      }
-    }
-  );
-});
-
-app.post(URL.API_URL_DELETE_CREDIT_TRANSACTION_CATEGORY, (req, res) => {
+app.post(URL.API_URL_DELETE_TRANSACTION_CATEGORY, (req, res) => {
   // const { userId, category } = req.body;
-  const { userId, categories } = req.body;
+  // TODO why in payload whole categories is being sent it will increase payload
+  // send only category fromclient and backend should delete that
+  const { userId, categories, type } = req.body;
+  let obj = {};
+  if(type === 'debit') {
+    obj = { debitTransactionCategories: categories }
+  } else if(type === 'credit') {
+    obj = { creditTransactionCategories: categories }
+  } else {
+    obj = { lentTransactionCategories: categories }
+  }
   User.findByIdAndUpdate(
-    userId,
-    // Not able to figure out below why the category didn't get deleted
-    // maybe can use sub documetns later to make it more scalable
-    // { $pull: { creditTransactionCategories: { $eleMatch: category } } },
-    { $set: { creditTransactionCategories: categories } },
-    { new: true },
-    function callback(err, doc) {
-      if (err) {
-        res.status(404).json({ error: err });
-      } else {
-        res.status(200).json({
-          msg: `Transaction Category ${categories} deleted successfully!`,
-        });
+      userId,
+      // Not able to figure out below why the category didn't get deleted
+      // maybe can use sub documetns later to make it more scalable
+      // { $pull: { debitTransactionCategories: { $eleMatch: category } } },
+      { $set: obj },
+      { new: true },
+      function callback(err, doc) {
+        if (err) {
+          console.error(err);
+          res.status(404).json({ error: err });
+        } else {
+          res.status(200).json({
+            msg: `Transaction Category deleted successfully!`,
+          });
+        }
       }
-    }
-  );
-});
-
-app.post(URL.API_URL_DELETE_DEBIT_TRANSACTION_CATEGORY, (req, res) => {
-  // const { userId, category } = req.body;
-  const { userId, categories } = req.body;
-  User.findByIdAndUpdate(
-    userId,
-    // Not able to figure out below why the category didn't get deleted
-    // maybe can use sub documetns later to make it more scalable
-    // { $pull: { debitTransactionCategories: { $eleMatch: category } } },
-    { $set: { debitTransactionCategories: categories } },
-    { new: true },
-    function callback(err, doc) {
-      if (err) {
-        console.error(err);
-        res.status(404).json({ error: err });
-      } else {
-        res.status(200).json({
-          msg: `Transaction Category ${categories} deleted successfully!`,
-        });
-      }
-    }
   );
 });
 
 app.post(URL.API_URL_GET_TRANSACTIONS, (req, res) => {
   const { userId, startDate: startDateString, endDate: endDateString, month, year } = req.body;
-  console.log(typeof year);
-  console.log(year);
   if (userId == "" || userId == undefined) {
     return res.status(400).json({ error: "Invalid userId" });
   }
@@ -224,11 +201,11 @@ app.post(URL.API_URL_GET_TRANSACTIONS, (req, res) => {
       return res.status(400).json({ error: "Failed to get transactions" });
     }
     const filteredTransactions = getFilteredTransactions(
-      transactions,
-      startDateString,
-      endDateString,
-      month,
-      year
+        transactions,
+        startDateString,
+        endDateString,
+        month,
+        year
     );
     filteredTransactions.sort((a, b) => {
       const da = new Date(a.date);
@@ -239,11 +216,11 @@ app.post(URL.API_URL_GET_TRANSACTIONS, (req, res) => {
     return res.status(200).json(filteredTransactions);
   });
   function getFilteredTransactions(
-    transactions,
-    startDateString,
-    endDateString,
-    month,
-    year
+      transactions,
+      startDateString,
+      endDateString,
+      month,
+      year
   ) {
 
     if (!startDateString || !endDateString) {
@@ -254,10 +231,10 @@ app.post(URL.API_URL_GET_TRANSACTIONS, (req, res) => {
         year = new Date().getFullYear();
       }
       return transactions.filter(
-        (transaction) =>
-          transaction.date &&
-          transaction.date.getMonth() === month &&
-          transaction.date.getFullYear() === year
+          (transaction) =>
+              transaction.date &&
+              transaction.date.getMonth() === month &&
+              transaction.date.getFullYear() === year
       );
     } else {
       const startDate = new Date(startDateString);
@@ -268,9 +245,9 @@ app.post(URL.API_URL_GET_TRANSACTIONS, (req, res) => {
       // basically remove the seconds thing in checking
       return transactions.filter((transaction) => {
         return (
-          transaction.date &&
-          transaction.date >= startDate &&
-          transaction.date <= endDate
+            transaction.date &&
+            transaction.date >= startDate &&
+            transaction.date <= endDate
         );
       });
     }
@@ -281,16 +258,16 @@ app.post(URL.API_URL_EDIT_TRANSACTION, (req, res) => {
   const updatedTransaction = req.body;
   const id = req.query.id;
   Transaction.findByIdAndUpdate(
-    id,
-    updatedTransaction,
-    { returnOriginal: false },
-    (err, result) => {
-      if (err) {
-        res.status(400).send(`Unable to edit transaction with ${id}`);
-      } else {
-        res.status(200).json(result);
+      id,
+      updatedTransaction,
+      { returnOriginal: false },
+      (err, result) => {
+        if (err) {
+          res.status(400).send(`Unable to edit transaction with ${id}`);
+        } else {
+          res.status(200).json(result);
+        }
       }
-    }
   );
 });
 
@@ -314,7 +291,6 @@ app.listen(port, () => {
 function getDotEnvConfigOptions() {
   const isEnvProduction = false;
   let dotEnvConfigOptions = {};
-  console.log(isEnvProduction);
   if (isEnvProduction) {
     dotEnvConfigOptions = {
       path: "./config/config-prod.env",
