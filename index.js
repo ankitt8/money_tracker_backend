@@ -125,7 +125,7 @@ app.post(URL.API_URL_GET_TRANSACTION_CATEGORIES, (req, res) => {
         transactionCategories: {
           credit: doc.creditTransactionCategories,
           debit: doc.debitTransactionCategories,
-          lent: doc.lentTransactionCategories,
+          borrowed: doc.borrowedTransactionCategories,
         },
       });
     }
@@ -140,7 +140,7 @@ app.post(URL.API_URL_ADD_TRANSACTION_CATEGORY, (req, res) => {
   } else if(type === 'credit') {
     obj = { creditTransactionCategories: category }
   } else {
-    obj = { lentTransactionCategories: category }
+    obj = { borrowedTransactionCategories: category }
   }
   User.findByIdAndUpdate(
       userId,
@@ -169,7 +169,7 @@ app.post(URL.API_URL_DELETE_TRANSACTION_CATEGORY, (req, res) => {
   } else if(type === 'credit') {
     obj = { creditTransactionCategories: categories }
   } else {
-    obj = { lentTransactionCategories: categories }
+    obj = { borrowedTransactionCategories: categories }
   }
   User.findByIdAndUpdate(
       userId,

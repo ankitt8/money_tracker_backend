@@ -5,7 +5,7 @@ const UserSchema = new mongoose.Schema({
   transactions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Transaction' }],
   creditTransactionCategories: [String],
   debitTransactionCategories: [String],
-  lentTransactionCategories: [String],
+  borrowedTransactionCategories: [String],
 });
 
 module.exports = mongoose.model('User', UserSchema);
