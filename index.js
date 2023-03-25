@@ -10,6 +10,7 @@ dotenv.config(getDotEnvConfigOptions());
 
 const Transaction = require("./models/Transaction");
 const User = require("./models/User");
+const Balance = require("./models/Balance");
 
 const app = express();
 // app.use(graphqlHTTP({
@@ -132,6 +133,16 @@ app.post(URL.API_URL_GET_TRANSACTION_CATEGORIES, (req, res) => {
   });
 });
 
+app.post(URL.API_URL_GET_BANK_ACCOUNTS, (req, res) => {
+  User.findById(req.body.userId, function callback(err, doc) {
+    if (err) {
+      res.status(404).json({ error: err });
+    } else {
+      res.status(201).json(doc.bankAccounts);
+    }
+  });
+});
+
 app.post(URL.API_URL_ADD_TRANSACTION_CATEGORY, (req, res) => {
   const { userId, category, type } = req.body;
   let obj = {};
@@ -157,6 +168,27 @@ app.post(URL.API_URL_ADD_TRANSACTION_CATEGORY, (req, res) => {
       }
   );
 });
+
+app.post(URL.API_URL_ADD_BANK_ACCOUNT, (req, res) => {
+  const { userId, bankName } = req.body;
+  const obj = {
+    bankAccounts : bankName
+  }
+  User.findByIdAndUpdate(
+      userId,
+      { $push: obj },
+      { new: true },
+      function callback(err, doc) {
+        if (err) {
+          res.status(404).json({ error: err });
+        } else {
+          res.status(200).json({
+            successMsg: `Bank account added successfully`,
+          });
+        }
+      }
+  );
+})
 
 app.post(URL.API_URL_DELETE_TRANSACTION_CATEGORY, (req, res) => {
   // const { userId, category } = req.body;
@@ -281,6 +313,20 @@ app.post(URL.API_URL_DELETE_TRANSACTION, (req, res) => {
     }
   });
 });
+
+app.post(URL.API_URL_ADD_BALANCE, (req, res) => {
+  const body = req.body;
+  console.log(body);
+  const NewBalance = new Balance(req.body);
+  NewBalance.save()
+      .then((balanceSavedDetails) => {
+        return res.status(200).json(balanceSavedDetails);
+      })
+      .catch((err) => {
+        return res.status(400).send("Failed To Balance Info");
+      });
+})
+
 const port = process.env.PORT || 8080;
 
 app.listen(port, () => {

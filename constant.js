@@ -10,6 +10,9 @@ const URL = {
   API_URL_DELETE_TRANSACTION_CATEGORY:
       "/api/delete-transaction-category",
   API_URL_GET_TRANSACTION_CATEGORIES: "/api/get-transaction-categories",
+  API_URL_ADD_BALANCE: "/api/add-balance",
+  API_URL_ADD_BANK_ACCOUNT: "/api/add-bank-account",
+  API_URL_GET_BANK_ACCOUNTS: "/api/get-bank-accounts",
 };
 
 module.exports = {
