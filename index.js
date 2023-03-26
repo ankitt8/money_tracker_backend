@@ -244,13 +244,19 @@ app.post(URL.API_URL_DELETE_BANK_ACCOUNT, (req, res) => {
 });
 
 app.post(URL.API_URL_GET_TRANSACTIONS, (req, res) => {
-  const { userId, startDate: startDateString, endDate: endDateString, month, year } = req.body;
+  const {userId, startDate: startDateString, endDate: endDateString, month, year, transactionType} = req.body;
+
   if (userId == "" || userId == undefined) {
-    return res.status(400).json({ error: "Invalid userId" });
+    return res.status(400).json({error: "Invalid userId"});
   }
-  Transaction.find({ userId: userId }).exec(function (err, transactions) {
+  let filterObj = {userId: userId};
+  if (transactionType) {
+    filterObj.type = transactionType;
+  }
+
+  Transaction.find(filterObj).exec(function (err, transactions) {
     if (err) {
-      return res.status(400).json({ error: "Failed to get transactions" });
+      return res.status(400).json({error: "Failed to get transactions"});
     }
     const filteredTransactions = getFilteredTransactions(
         transactions,
