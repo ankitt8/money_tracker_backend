@@ -138,7 +138,6 @@ app.post(URL.API_URL_GET_BANK_ACCOUNTS, (req, res) => {
     if (err) {
       res.status(404).json({ error: err });
     } else {
-      console.log(doc.bankAccounts);
       res.status(201).json(doc.bankAccounts);
     }
   });
@@ -226,7 +225,6 @@ app.post(URL.API_URL_DELETE_TRANSACTION_CATEGORY, (req, res) => {
 
 app.post(URL.API_URL_DELETE_BANK_ACCOUNT, (req, res) => {
   const { userId, newBankAccounts } = req.body;
-  console.log(newBankAccounts);
   User.findByIdAndUpdate(
       userId,
       // Not able to figure out below why the category didn't get deleted
