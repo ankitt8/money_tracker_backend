@@ -138,6 +138,7 @@ app.post(URL.API_URL_GET_BANK_ACCOUNTS, (req, res) => {
     if (err) {
       res.status(404).json({ error: err });
     } else {
+      console.log(doc.bankAccounts);
       res.status(201).json(doc.bankAccounts);
     }
   });
@@ -183,7 +184,7 @@ app.post(URL.API_URL_ADD_BANK_ACCOUNT, (req, res) => {
           res.status(404).json({ error: err });
         } else {
           res.status(200).json({
-            successMsg: `Bank account added successfully`,
+            bankAdded: bankName
           });
         }
       }
@@ -218,6 +219,27 @@ app.post(URL.API_URL_DELETE_TRANSACTION_CATEGORY, (req, res) => {
           res.status(200).json({
             msg: `Transaction Category deleted successfully!`,
           });
+        }
+      }
+  );
+});
+
+app.post(URL.API_URL_DELETE_BANK_ACCOUNT, (req, res) => {
+  const { userId, newBankAccounts } = req.body;
+  console.log(newBankAccounts);
+  User.findByIdAndUpdate(
+      userId,
+      // Not able to figure out below why the category didn't get deleted
+      // maybe can use sub documetns later to make it more scalable
+      // { $pull: { debitTransactionCategories: { $eleMatch: category } } },
+      { $set: {bankAccounts: newBankAccounts} },
+      { new: true },
+      function callback(err, doc) {
+        if (err) {
+          console.error(err);
+          res.status(404).json({ error: err });
+        } else {
+          res.status(200).json({bankAccounts: doc.bankAccounts});
         }
       }
   );

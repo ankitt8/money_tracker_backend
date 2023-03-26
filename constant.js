@@ -13,6 +13,7 @@ const URL = {
   API_URL_ADD_BALANCE: "/api/add-balance",
   API_URL_ADD_BANK_ACCOUNT: "/api/add-bank-account",
   API_URL_GET_BANK_ACCOUNTS: "/api/get-bank-accounts",
+  API_URL_DELETE_BANK_ACCOUNT: "/api/delete-bank-account",
 };
 
 module.exports = {
