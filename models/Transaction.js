@@ -13,6 +13,9 @@ const TransactionSchema = new mongoose.Schema({
     mode: {
         type: String
     },
+    bankAccount: {
+        type: String
+    },
     type: {
         type: String
     },
