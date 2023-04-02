@@ -11,9 +11,9 @@ const URL = {
       "/api/delete-transaction-category",
   API_URL_GET_TRANSACTION_CATEGORIES: "/api/get-transaction-categories",
   API_URL_ADD_BALANCE: "/api/add-balance",
-  API_URL_ADD_BANK_ACCOUNT: "/api/add-bank-account",
-  API_URL_GET_BANK_ACCOUNTS: "/api/get-bank-accounts",
-  API_URL_DELETE_BANK_ACCOUNT: "/api/delete-bank-account",
+  API_URL_ADD_PAYMENT_INSTRUMENT: "/api/add-payment-instrument",
+  API_URL_GET_PAYMENT_INSTRUMENTS: "/api/get-payment-instruments",
+  API_URL_DELETE_PAYMENT_INSTRUMENT: "/api/delete-payment-instrument",
 };
 
 module.exports = {

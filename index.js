@@ -133,18 +133,20 @@ app.post(URL.API_URL_GET_TRANSACTION_CATEGORIES, (req, res) => {
   });
 });
 
-app.post(URL.API_URL_GET_BANK_ACCOUNTS, (req, res) => {
-  User.findById(req.body.userId, function callback(err, doc) {
+
+app.post(URL.API_URL_GET_PAYMENT_INSTRUMENTS, (req, res) => {
+  const {userId, flag} = req.body;
+  User.findById(userId, function callback(err, doc) {
     if (err) {
-      res.status(404).json({ error: err });
+      res.status(404).json({error: err});
     } else {
-      res.status(201).json(doc.bankAccounts);
+      res.status(201).json(flag === 'bankAccounts' ? doc.bankAccounts : doc.creditCards);
     }
   });
 });
 
 app.post(URL.API_URL_ADD_TRANSACTION_CATEGORY, (req, res) => {
-  const { userId, category, type } = req.body;
+  const {userId, category, type} = req.body;
   let obj = {};
   if(type === 'debit') {
     obj = { debitTransactionCategories: category }
@@ -169,21 +171,26 @@ app.post(URL.API_URL_ADD_TRANSACTION_CATEGORY, (req, res) => {
   );
 });
 
-app.post(URL.API_URL_ADD_BANK_ACCOUNT, (req, res) => {
-  const { userId, bankName } = req.body;
-  const obj = {
-    bankAccounts : bankName
+app.post(URL.API_URL_ADD_PAYMENT_INSTRUMENT, (req, res) => {
+  const {flag, userId, paymentInstrumentName} = req.body;
+  let obj = {
+    bankAccounts: paymentInstrumentName
+  }
+  if (flag === 'creditCards') {
+    obj = {
+      creditCards: paymentInstrumentName
+    }
   }
   User.findByIdAndUpdate(
       userId,
-      { $push: obj },
-      { new: true },
+      {$push: obj},
+      {new: true},
       function callback(err, doc) {
         if (err) {
-          res.status(404).json({ error: err });
+          res.status(404).json({error: err});
         } else {
           res.status(200).json({
-            bankAdded: bankName
+            paymentInstrumentAdded: paymentInstrumentName
           });
         }
       }
@@ -223,21 +230,25 @@ app.post(URL.API_URL_DELETE_TRANSACTION_CATEGORY, (req, res) => {
   );
 });
 
-app.post(URL.API_URL_DELETE_BANK_ACCOUNT, (req, res) => {
-  const { userId, newBankAccounts } = req.body;
+app.post(URL.API_URL_DELETE_PAYMENT_INSTRUMENT, (req, res) => {
+  const {userId, flag, newPaymentInstruments} = req.body;
+  let obj = {bankAccounts: newPaymentInstruments};
+  if (flag === 'creditCards') {
+    obj = {creditCards: newPaymentInstruments}
+  }
   User.findByIdAndUpdate(
       userId,
       // Not able to figure out below why the category didn't get deleted
       // maybe can use sub documetns later to make it more scalable
       // { $pull: { debitTransactionCategories: { $eleMatch: category } } },
-      { $set: {bankAccounts: newBankAccounts} },
-      { new: true },
+      {$set: obj},
+      {new: true},
       function callback(err, doc) {
         if (err) {
           console.error(err);
-          res.status(404).json({ error: err });
+          res.status(404).json({error: err});
         } else {
-          res.status(200).json({bankAccounts: doc.bankAccounts});
+          res.status(200).json({paymentInstruments: newPaymentInstruments});
         }
       }
   );
