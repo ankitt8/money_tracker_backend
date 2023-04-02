@@ -255,7 +255,7 @@ app.post(URL.API_URL_DELETE_PAYMENT_INSTRUMENT, (req, res) => {
 });
 
 app.post(URL.API_URL_GET_TRANSACTIONS, (req, res) => {
-  const {userId, startDate: startDateString, endDate: endDateString, month, year, transactionType} = req.body;
+  const {userId, startDate: startDateString, endDate: endDateString, month, year, transactionType, category} = req.body;
 
   if (userId == "" || userId == undefined) {
     return res.status(400).json({error: "Invalid userId"});
@@ -263,6 +263,9 @@ app.post(URL.API_URL_GET_TRANSACTIONS, (req, res) => {
   let filterObj = {userId: userId};
   if (transactionType) {
     filterObj.type = transactionType;
+  }
+  if (category) {
+    filterObj.category = category;
   }
 
   Transaction.find(filterObj).exec(function (err, transactions) {
