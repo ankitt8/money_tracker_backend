@@ -16,13 +16,16 @@ const TransactionSchema = new mongoose.Schema({
     bankAccount: {
         type: String
     },
+    creditCard: {
+        type: String
+    },
     type: {
         type: String
     },
     category: {
         type: String
     },
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+    userId: {type: mongoose.Schema.Types.ObjectId, ref: 'User'}
 })
 
 module.exports = mongoose.model('Transaction', TransactionSchema);
