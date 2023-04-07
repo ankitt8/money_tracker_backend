@@ -255,12 +255,27 @@ app.post(URL.API_URL_DELETE_PAYMENT_INSTRUMENT, (req, res) => {
 });
 
 app.post(URL.API_URL_GET_TRANSACTIONS, (req, res) => {
-  const {userId, startDate: startDateString, endDate: endDateString, month, year, transactionType, category} = req.body;
+  const {
+    userId,
+    startDate: requestStartDateString,
+    endDate: requestEndDateString,
+    transactionType,
+    category
+  } = req.body;
 
   if (userId == "" || userId == undefined) {
     return res.status(400).json({error: "Invalid userId"});
   }
-  let filterObj = {userId: userId};
+  const currentYear = new Date().getFullYear();
+  let currentMonth = new Date().getMonth();
+
+  let filterStartDate = new Date(currentYear, currentMonth, 1);
+  let filterEndDate = new Date(currentYear, currentMonth + 1, 0);
+  if (requestStartDateString) filterStartDate = new Date(requestStartDateString);
+  if (requestEndDateString) filterEndDate = new Date(requestEndDateString);
+  console.log({filterStartDate, filterEndDate});
+
+  let filterObj = {userId: userId, "date": {$gte: filterStartDate.toISOString(), $lte: filterEndDate.toISOString()}};
   if (transactionType) {
     filterObj.type = transactionType;
   }
@@ -268,62 +283,12 @@ app.post(URL.API_URL_GET_TRANSACTIONS, (req, res) => {
     filterObj.category = category;
   }
 
-  Transaction.find(filterObj).exec(function (err, transactions) {
+  Transaction.find(filterObj).sort('date').exec(function (err, transactions) {
     if (err) {
       return res.status(400).json({error: "Failed to get transactions"});
     }
-    const filteredTransactions = getFilteredTransactions(
-        transactions,
-        startDateString,
-        endDateString,
-        month,
-        year
-    );
-    filteredTransactions.sort((a, b) => {
-      const da = new Date(a.date);
-      const db = new Date(b.date);
-      // sort by date in descending order
-      return db - da;
-    });
-    return res.status(200).json(filteredTransactions);
+    return res.status(200).json(transactions);
   });
-  function getFilteredTransactions(
-      transactions,
-      startDateString,
-      endDateString,
-      month,
-      year
-  ) {
-
-    if (!startDateString || !endDateString) {
-      if (!month) {
-        month = new Date().getMonth();
-      }
-      if (!year) {
-        year = new Date().getFullYear();
-      }
-      return transactions.filter(
-          (transaction) =>
-              transaction.date &&
-              transaction.date.getMonth() === month &&
-              transaction.date.getFullYear() === year
-      );
-    } else {
-      const startDate = new Date(startDateString);
-      const endDate = new Date(endDateString);
-      // todo when history api is called
-      // endDate timestamp is alwasy greater than the current date
-      // so current date transactions don't come in history
-      // basically remove the seconds thing in checking
-      return transactions.filter((transaction) => {
-        return (
-            transaction.date &&
-            transaction.date >= startDate &&
-            transaction.date <= endDate
-        );
-      });
-    }
-  }
 });
 
 app.post(URL.API_URL_EDIT_TRANSACTION, (req, res) => {
