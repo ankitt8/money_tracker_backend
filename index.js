@@ -124,9 +124,9 @@ app.post(URL.API_URL_GET_TRANSACTION_CATEGORIES, (req, res) => {
     } else {
       res.status(201).json({
         transactionCategories: {
-          credit: doc.creditTransactionCategories,
-          debit: doc.debitTransactionCategories,
-          borrowed: doc.borrowedTransactionCategories,
+          credit: doc?.creditTransactionCategories ?? [],
+          debit: doc?.debitTransactionCategories ?? [],
+          borrowed: doc?.borrowedTransactionCategories ?? [],
         },
       });
     }
@@ -273,7 +273,6 @@ app.post(URL.API_URL_GET_TRANSACTIONS, (req, res) => {
   let filterEndDate = new Date(currentYear, currentMonth + 1, 0);
   if (requestStartDateString) filterStartDate = new Date(requestStartDateString);
   if (requestEndDateString) filterEndDate = new Date(requestEndDateString);
-  console.log({filterStartDate, filterEndDate});
 
   let filterObj = {userId: userId, "date": {$gte: filterStartDate.toISOString(), $lte: filterEndDate.toISOString()}};
   if (transactionType) {
@@ -283,7 +282,7 @@ app.post(URL.API_URL_GET_TRANSACTIONS, (req, res) => {
     filterObj.category = category;
   }
 
-  Transaction.find(filterObj).sort('date').exec(function (err, transactions) {
+  Transaction.find(filterObj).sort('-date').exec(function (err, transactions) {
     if (err) {
       return res.status(400).json({error: "Failed to get transactions"});
     }
